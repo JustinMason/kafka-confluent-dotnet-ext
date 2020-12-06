@@ -18,6 +18,10 @@ namespace KafkaFacade
         public ConsumeResult<string, GenericRecord> ConsumeResult => _consumeResult;
         public ISchemaRegistryClient SchemaRegistryClient => _schemaRegistryClient;
         
+        public async Task<T> ToSpecificAsync<T>()
+        {
+            return await _consumeResult.Message.Value.ToSpecificAsync<T>(_schemaRegistryClient);
+        }
         
     }
 }
