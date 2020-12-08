@@ -10,7 +10,7 @@ using Confluent.Kafka.SyncOverAsync;
 
 namespace KafkaFacade
 {
-    public class AvroConsumerClient
+    public class AvroConsumerClient : IDisposable
     {
         private readonly object _sync = new object();
         private readonly ConsumerConfig _consumerConfig;
@@ -65,6 +65,10 @@ namespace KafkaFacade
                     }
                }
             );
+        }
+
+        public void Close(){
+            _cancellationTokenSource.Cancel();
         }
 
         public void Dispose()

@@ -5,6 +5,7 @@ using Avro.Specific;
 using Confluent.SchemaRegistry.Serdes;
 using System.Threading.Tasks;
 using System.Net;
+using Confluent.Kafka.SyncOverAsync;
 
 namespace KafkaFacade
 {
@@ -20,8 +21,8 @@ namespace KafkaFacade
             _schemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryConfig);
 
             _producer = new ProducerBuilder<string, T>(producerConfig)
-                .SetValueSerializer(new AvroSerializer<T>(_schemaRegistryClient, avroSerialzerConfig))
-                .SetKeySerializer(new AvroSerializer<String>(_schemaRegistryClient, avroSerialzerConfig))
+                .SetValueSerializer(new AvroSerializer<T>(_schemaRegistryClient, avroSerialzerConfig).AsSyncOverAsync())
+                .SetKeySerializer(new AvroSerializer<String>(_schemaRegistryClient, avroSerialzerConfig).AsSyncOverAsync())
                 .Build();
         }
 
@@ -41,6 +42,12 @@ namespace KafkaFacade
         {
             return await _producer.ProduceAsync(topic, new Message<string, T> {Key=key, Value = item});
         }
+
+        public void Produce(string topic, string key, T item, Action<DeliveryReport<string, T>> produceReportAction)
+        {
+            _producer.Produce(topic, new Message<string, T> {Key=key, Value = item}, produceReportAction);
+        }
+
         public Handle Handle => _producer.Handle;
 
         public CachedSchemaRegistryClient SchemaRegistryClient => _schemaRegistryClient;
