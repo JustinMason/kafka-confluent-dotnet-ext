@@ -26,15 +26,14 @@ namespace KafkaFacade
                 .Build();
         }
 
-        public AvroProducerClient(IProducerClient producerClient, 
-            SchemaRegistryConfig schemaRegistryConfig, 
+        public AvroProducerClient(IProducerClient producerClient,  
             AvroSerializerConfig avroSerialzerConfig )
         {
-            _schemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryConfig);
+            _schemaRegistryClient = producerClient.SchemaRegistryClient;
 
             _producer = new DependentProducerBuilder<string, T>(producerClient.Handle)
-                .SetValueSerializer(new AvroSerializer<T>(_schemaRegistryClient, avroSerialzerConfig))
-                .SetKeySerializer(new AvroSerializer<String>(_schemaRegistryClient, avroSerialzerConfig))
+                .SetValueSerializer(new AvroSerializer<T>(_schemaRegistryClient, avroSerialzerConfig).AsSyncOverAsync())
+                .SetKeySerializer(new AvroSerializer<String>(_schemaRegistryClient, avroSerialzerConfig).AsSyncOverAsync())
                 .Build();
         }
 
