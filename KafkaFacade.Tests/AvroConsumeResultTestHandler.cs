@@ -3,6 +3,7 @@ using Avro.Generic;
 using Confluent.Kafka;
 using Confluent.Kafka.Examples.AvroSpecific;
 using Xunit;
+using KafkaFacade.Avro;
 
 namespace KafkaFacade.Tests
 {
@@ -12,6 +13,13 @@ namespace KafkaFacade.Tests
     public class AvroConsumeResultTestHandler : IHandleAvroConsumeResultEvent
     {
         int _handled = 0;
+        List<long> _offsets = new List<long>();
+        public AvroConsumeResultTestHandler(List<long> offsets, int handleCount = 1)
+        {
+            HandleCount = handleCount;
+            _offsets = offsets;
+        }
+
         public AvroConsumeResultTestHandler(int handleCount = 1)
         {
             HandleCount = handleCount;

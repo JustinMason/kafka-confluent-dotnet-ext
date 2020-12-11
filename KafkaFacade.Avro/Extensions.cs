@@ -3,7 +3,7 @@ using Avro.Generic;
 using Confluent.SchemaRegistry;
 using Confluent.SchemaRegistry.Serdes;
 
-namespace KafkaFacade
+namespace KafkaFacade.Avro
 {
     public static class Extensions
     {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka.SyncOverAsync;
 
 
-namespace KafkaFacade
+namespace KafkaFacade.Avro
 {
     public class AvroConsumerClient : IDisposable
     {

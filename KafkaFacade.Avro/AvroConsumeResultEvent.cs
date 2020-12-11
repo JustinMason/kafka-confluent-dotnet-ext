@@ -3,7 +3,7 @@ using Confluent.SchemaRegistry;
 using Avro.Generic;
 using System.Threading.Tasks;
 
-namespace KafkaFacade
+namespace KafkaFacade.Avro
 {
     public class AvroConsumeResultEvent
     {

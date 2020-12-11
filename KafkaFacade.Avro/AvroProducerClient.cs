@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Net;
 using Confluent.Kafka.SyncOverAsync;
 
-namespace KafkaFacade
+namespace KafkaFacade.Avro
 {
     public class AvroProducerClient<T> : IProducerClient, IDisposable
         where T : ISpecificRecord

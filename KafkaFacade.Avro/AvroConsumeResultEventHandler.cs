@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Avro.Generic;
 using Confluent.Kafka;
 
-namespace KafkaFacade
+namespace KafkaFacade.Avro
 {
     public abstract class AvroConsumeResultEventHandler : IHandleAvroConsumeResultEvent
     {

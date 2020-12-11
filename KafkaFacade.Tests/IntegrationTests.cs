@@ -1,13 +1,10 @@
 using System;
 using Xunit;
-using KafkaFacade;
 using Confluent.SchemaRegistry;
 using Confluent.SchemaRegistry.Serdes;
-using System.Threading.Tasks;
 using Confluent.Kafka;
-using System.IO;
-using System.Linq;
 using Confluent.Kafka.Examples.AvroSpecific;
+using Avro;
 
 namespace KafkaFacade.Tests
 {
@@ -15,11 +12,11 @@ namespace KafkaFacade.Tests
     {
         
         string _topic = "users";
-        string _bootstrapServers = ".gcp.confluent.cloud:9092";
-        string _cloudAccessKey = "";
-        string _cloudAccessSecret = "";
-        string _schemaRegistryUrl = "https://.gcp.confluent.cloud";
-        string _schemaRegistryUserPassword = "key:secret";
+string _bootstrapServers = "pkc-43n10.us-central1.gcp.confluent.cloud:9092";
+string _cloudAccessKey = "PY4KFEUYEEDWXYYT";
+string _cloudAccessSecret = "Udg6kArma++JRe9To0iokUu7hgnjNNhSntm6aBSxqHjU7mPkbX1/zWbbPGLyl1Il";
+string _schemaRegistryUrl = "https://psrc-4nrnd.us-central1.gcp.confluent.cloud";
+string _schemaRegistryUserPassword = "6RIGIUO2CNW3NIQX:AjGa04I2RQ41iQRltvkaGCW6biVSuPsdWwpnt6+US0NjNKljYJMv5WV3IMV57wu/";
 
         private ProducerConfig ProducerConfig ()
         { 
@@ -68,13 +65,13 @@ namespace KafkaFacade.Tests
         [Fact]
         public void CanProduceAndConsumeFromCloudInstance()
         {
-            using(var producer = new AvroProducerClient<User>(
+            using(var producer = new Avro.AvroProducerClient<User>(
                 ProducerConfig(),
                 SchemaRegistryConfig(),
                 AvroSerializerConfig()
             ))
             {
-
+                
                 var user = new User(){
                     name = "Unit Test Name",
                     favorite_color = "green",
@@ -96,7 +93,7 @@ namespace KafkaFacade.Tests
                 });
             }
             
-            using(var consumer = new AvroConsumerClient(ConsumerConfig(), 
+            using(var consumer = new Avro.AvroConsumerClient(ConsumerConfig(), 
                 SchemaRegistryConfig(),
                 new AvroConsumeResultTestHandler()))
             {
@@ -108,13 +105,13 @@ namespace KafkaFacade.Tests
         [Fact]
         public void CanProduceUserAndHourBilledAndConsumeBothFromCloudInstance()
         {
-            using(var producerUser = new AvroProducerClient<User>(
+            using(var producerUser = new Avro.AvroProducerClient<User>(
                 ProducerConfig(),
                 SchemaRegistryConfig(),
                 AvroSerializerConfig()
 
             ))
-            using(var producerHoursBilled = new AvroProducerClient<HourBilled>(
+            using(var producerHoursBilled = new Avro.AvroProducerClient<HourBilled>(
                 producerUser,
                 AvroSerializerConfig()
             ))
@@ -129,7 +126,7 @@ namespace KafkaFacade.Tests
 
                 var hourBilled = new HourBilled(){
                     name = "Unit Test Hour 10% Bonus",
-                    rate_billed = Math.Round( Avro.AvroDecimal.ToDecimal( user.hourly_rate) * (decimal)0.1,2)
+                    rate_billed = Math.Round( AvroDecimal.ToDecimal( user.hourly_rate) * (decimal)0.1,2)
                 };
 
                 producerUser.Produce(_topic, "test1", user, (deliveryReport) =>
@@ -159,7 +156,7 @@ namespace KafkaFacade.Tests
                 });
             }
             
-            using(var consumer = new AvroConsumerClient(ConsumerConfig(), 
+            using(var consumer = new Avro.AvroConsumerClient(ConsumerConfig(), 
                 SchemaRegistryConfig(),
                 new AvroConsumeResultTestHandler(2)))
             {
