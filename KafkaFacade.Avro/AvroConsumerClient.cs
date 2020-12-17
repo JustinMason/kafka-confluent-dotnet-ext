@@ -7,25 +7,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka.SyncOverAsync;
 
-
 namespace KafkaFacade.Avro
 {
     public class AvroConsumerClient : IDisposable
     {
-        private readonly object _sync = new object();
         private readonly ConsumerConfig _consumerConfig;
+
         private readonly SchemaRegistryConfig _schemaRegistryConfig;
 
         private readonly IHandleAvroConsumeResultEvent _handleAvroConsumeResultEvent;
-
+        
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
+        private readonly CommitWindow _commitWindow = new CommitWindow();
+        
         public AvroConsumerClient(ConsumerConfig consumerConfig,
             SchemaRegistryConfig schemaRegistryConfig,
-            IHandleAvroConsumeResultEvent handleAvroConsumeResultEvent)
+            IHandleAvroConsumeResultEvent handleAvroConsumeResultEvent,
+            int commitWindowMilliseconds = 1000)
         {
             _consumerConfig = consumerConfig;
             _schemaRegistryConfig = schemaRegistryConfig;
             _handleAvroConsumeResultEvent = handleAvroConsumeResultEvent;
+            _commitWindow.WindowMilliseconds = commitWindowMilliseconds;
         }
 
         public Task Open(string topic)
@@ -52,6 +56,20 @@ namespace KafkaFacade.Avro
                                 {
                                     var avroConsumeResultEvent = new AvroConsumeResultEvent(schemaRegistry, consumeResult);
                                     _handleAvroConsumeResultEvent?.Handle(this, avroConsumeResultEvent);
+
+                                    if(_commitWindow.Elasped)
+                                    {
+                                        try
+                                        {
+                                            consumer.Commit();
+                                        }
+                                        catch (System.Exception err)
+                                        {
+                                            System.Diagnostics.Debug.Write (err.ToString());
+                                        }
+
+                                        _commitWindow.Reset();
+                                    }
                                 }
                             }
                         }
@@ -75,6 +93,5 @@ namespace KafkaFacade.Avro
         {
             _cancellationTokenSource.Dispose();
         }
-
     }
 }

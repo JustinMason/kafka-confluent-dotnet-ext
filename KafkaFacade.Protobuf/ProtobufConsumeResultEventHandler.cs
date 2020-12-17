@@ -32,12 +32,12 @@ namespace KafkaFacade.Protobuf
             }
             catch (System.Exception err)
             {
-                System.Console.WriteLine(err.ToString());
+                System.Diagnostics.Debug.Fail(err.ToString());
             }
         }
         public virtual void ErrorHandler(IConsumer<string, T> consumer, Error error)
         {
-            System.Console.WriteLine($"Error Handler: {error}");
+            System.Diagnostics.Debug.Fail($"Error Handler: {error}");
         }
 
     }

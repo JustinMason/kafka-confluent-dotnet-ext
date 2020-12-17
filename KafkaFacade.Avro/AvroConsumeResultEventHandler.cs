@@ -7,7 +7,7 @@ namespace KafkaFacade.Avro
     public abstract class AvroConsumeResultEventHandler : IHandleAvroConsumeResultEvent
     {
         private readonly Dictionary<int, TopicPartitionOffset> _currentOffsets = new Dictionary<int, TopicPartitionOffset>();
-        
+
         public abstract void HandleEvent(AvroConsumerClient avroConsumerClient, AvroConsumeResultEvent avroConsumeResultEvent);
 
         public virtual void Handle(AvroConsumerClient avroConsumerClient, AvroConsumeResultEvent avroConsumeResultEvent)
@@ -31,12 +31,12 @@ namespace KafkaFacade.Avro
             }
             catch (System.Exception err)
             {
-                System.Console.WriteLine(err.ToString());
+                System.Diagnostics.Debug.Fail(err.ToString());
             }
         }
         public virtual void ErrorHandler(IConsumer<string, GenericRecord> consumer, Error error)
         {
-            System.Console.WriteLine($"Error Handler: {error}");
+            System.Diagnostics.Debug.Fail($"Error Handler: {error}");
         }
     }
 }
