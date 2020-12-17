@@ -60,7 +60,7 @@ namespace KafkaFacade.Tests
             //Second Recieved does not elapses at 11 milliseconds
             commitWindow.Recieved();
             Assert.True(commitWindow.Elasped); 
-
+            
         }
     }
 }

@@ -6,11 +6,11 @@ namespace KafkaFacade.Tests
 {
     public class BaseIntegrationTests
     {
-        protected string _bootstrapServers = "pkc-43n10.us-central1.gcp.confluent.cloud:9092";
-        protected string _cloudAccessKey = "YD2MUJMM7MQ7FEPJ";
-        protected string _cloudAccessSecret = "gS0Sj0LiqE/SAyjloa3LpTj0o/JxeNxibvbfNZj0Nws/D6xVbU40ENk9xZL9tfig";
-        protected string _schemaRegistryUrl = "https://psrc-4nrnd.us-central1.gcp.confluent.cloud";
-        protected string _schemaRegistryUserPassword = "VP3RJO2MI6PF2LAE:haMScw6UyGAhVqLaTpZvavJfcq6p/GnOCcoxM3TZJLO4jdHFzChOflR5FOa2HptX";
+        string _bootstrapServers = ".gcp.confluent.cloud:9092";
+        string _cloudAccessKey = "";
+        string _cloudAccessSecret = "";
+        string _schemaRegistryUrl = "https://.gcp.confluent.cloud";
+        string _schemaRegistryUserPassword = "key:secret";
 
 
         protected ProducerConfig ProducerConfig ()
