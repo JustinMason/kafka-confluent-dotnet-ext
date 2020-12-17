@@ -61,7 +61,7 @@ namespace Confluent.Kafka.Examples.AvroSpecific
 			switch (fieldPos)
 			{
 			case 0: this.name = (System.String)fieldValue; break;
-			case 3: this.rate_billed = (Avro.AvroDecimal)fieldValue; break;
+			case 1: this.rate_billed = (Avro.AvroDecimal)fieldValue; break;
 			default: throw new AvroRuntimeException("Bad index " + fieldPos + " in Put()");
 			};
 		}
