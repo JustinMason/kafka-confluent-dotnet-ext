@@ -54,13 +54,20 @@ namespace KafkaFacade.Tests
             commitWindow.Recieved();
             Assert.False(commitWindow.Elasped); 
 
-                        clockMock.Reset();
+            clockMock.Reset();
             clockMock.Setup(x=> x.Now ).Returns(new System.DateTime(1999,12,31,1,1,1,12));
 
-            //Second Recieved does not elapses at 11 milliseconds
+            //Third Recieved After Reset Does Elasp Window 11 milliseconds
             commitWindow.Recieved();
             Assert.True(commitWindow.Elasped); 
-            
+
+            clockMock.Reset();
+            clockMock.Setup(x=> x.Now ).Returns(new System.DateTime(1999,12,31,1,1,1,13));
+
+            //Forth Reset of Window Does not Elasp Window 1 milliseconds from Reset()
+            commitWindow.Reset();
+            Assert.False(commitWindow.Elasped); 
+
         }
     }
 }

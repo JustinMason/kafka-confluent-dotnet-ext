@@ -54,6 +54,7 @@ namespace KafkaFacade.Avro
                                 var consumeResult = consumer.Consume(_cancellationTokenSource.Token);
                                 if(consumeResult != null && consumeResult.Message != null)
                                 {
+                                    _commitWindow.Recieved();
                                     var avroConsumeResultEvent = new AvroConsumeResultEvent(schemaRegistry, consumeResult);
                                     _handleAvroConsumeResultEvent?.Handle(this, avroConsumeResultEvent);
 
@@ -73,13 +74,10 @@ namespace KafkaFacade.Avro
                                 }
                             }
                         }
-                        catch(OperationCanceledException){
-
-                        }
+                        catch(OperationCanceledException){}
                         finally{
                             consumer.Close();
                         }
-
                     }
                }
             );
