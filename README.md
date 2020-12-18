@@ -13,6 +13,6 @@ See: https://martin.kleppmann.com/2018/01/18/event-types-in-kafka-topic.html
 
 ## ProtobufConsumerClient
 
-Follows the AvroConsumerClient's IHandle Pattern.  Confluent's Protobuf Serializer does not have a non-generic IMesssage implementation, and can not support topics that have more than one type of Event (Protobuf Schema).
+Follows the AvroConsumerClient's IHandle Pattern.  Confluent's Protobuf Serializer does not have a non-generic IMesssage implementation, and cannot support topics that have more than one type of Event (Protobuf Schema).
 
-This is a work in progress and is built to ultimately support Dependency Injection and Dynamic Event Handlers.
+*This is a work in progress*
