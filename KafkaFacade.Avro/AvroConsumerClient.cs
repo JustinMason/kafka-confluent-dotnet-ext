@@ -6,33 +6,35 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka.SyncOverAsync;
+using Microsoft.Extensions.Logging;
 
 namespace KafkaFacade.Avro
 {
     public class AvroConsumerClient : IDisposable
     {
+        private readonly ILogger _logger;
+
         private readonly ConsumerConfig _consumerConfig;
 
         private readonly SchemaRegistryConfig _schemaRegistryConfig;
-
-        private readonly IHandleAvroConsumeResultEvent _handleAvroConsumeResultEvent;
         
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
-        private readonly CommitWindow _commitWindow = new CommitWindow();
         
         public AvroConsumerClient(ConsumerConfig consumerConfig,
             SchemaRegistryConfig schemaRegistryConfig,
-            IHandleAvroConsumeResultEvent handleAvroConsumeResultEvent,
+            ILogger<AvroConsumerClient> logger,
             int commitWindowMilliseconds = 1000)
         {
             _consumerConfig = consumerConfig;
             _schemaRegistryConfig = schemaRegistryConfig;
-            _handleAvroConsumeResultEvent = handleAvroConsumeResultEvent;
-            _commitWindow.WindowMilliseconds = commitWindowMilliseconds;
+            _logger = logger;
+
+            _consumerConfig.EnableAutoOffsetStore = false;
+            _consumerConfig.AutoCommitIntervalMs = commitWindowMilliseconds;
+            _consumerConfig.EnableAutoCommit = true;
         }
 
-        public Task Open(string topic)
+        public Task Open(string topic, IHandleAvroConsumeResultEvent handler)
         {
             return Task.Run(()=> {
                 System.Threading.Thread.CurrentThread.Name = $"Task:{DateTime.Now.Ticks}";
@@ -41,8 +43,8 @@ namespace KafkaFacade.Avro
                 using (var consumer = new ConsumerBuilder<string, GenericRecord>(_consumerConfig)
                     .SetKeyDeserializer(new AvroDeserializer<string>(schemaRegistry).AsSyncOverAsync())
                     .SetValueDeserializer(new AvroDeserializer<GenericRecord>(schemaRegistry).AsSyncOverAsync())
-                    .SetErrorHandler (_handleAvroConsumeResultEvent.ErrorHandler)
-                    .SetPartitionsRevokedHandler(_handleAvroConsumeResultEvent.PartitionsRevokedHandleAction)
+                    .SetErrorHandler (handler.ErrorHandler)
+                    .SetPartitionsRevokedHandler(handler.PartitionsRevokedHandleAction)
                     .Build())
                     {
                         consumer.Subscribe(topic);
@@ -54,23 +56,9 @@ namespace KafkaFacade.Avro
                                 var consumeResult = consumer.Consume(_cancellationTokenSource.Token);
                                 if(consumeResult != null && consumeResult.Message != null)
                                 {
-                                    _commitWindow.Recieved();
                                     var avroConsumeResultEvent = new AvroConsumeResultEvent(schemaRegistry, consumeResult);
-                                    _handleAvroConsumeResultEvent?.Handle(this, avroConsumeResultEvent);
-
-                                    if(_commitWindow.Elasped)
-                                    {
-                                        try
-                                        {
-                                            consumer.Commit();
-                                        }
-                                        catch (System.Exception err)
-                                        {
-                                            System.Diagnostics.Debug.Write (err.ToString());
-                                        }
-
-                                        _commitWindow.Reset();
-                                    }
+                                    handler?.Handle(this, avroConsumeResultEvent);
+                                    consumer.StoreOffset(consumeResult);   
                                 }
                             }
                         }

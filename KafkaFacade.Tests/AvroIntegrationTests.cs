@@ -5,6 +5,8 @@ using Confluent.SchemaRegistry.Serdes;
 using Confluent.Kafka;
 using Confluent.Kafka.Examples.AvroSpecific;
 using Avro;
+using Microsoft.Extensions.Logging;
+using KafkaFacade.Avro;
 
 namespace KafkaFacade.Tests
 {
@@ -47,9 +49,9 @@ namespace KafkaFacade.Tests
             
             using(var consumer = new Avro.AvroConsumerClient(ConsumerConfig(), 
                 SchemaRegistryConfig(),
-                new AvroConsumeResultTestHandler()))
+                new LoggerFactory().CreateLogger<AvroConsumerClient>()))
             {
-                var t = consumer.Open(_topic);
+                var t = consumer.Open(_topic, new AvroConsumeResultTestHandler());
                 Assert.True(t.Wait(10000), "Done Waiting, Consumed Something");
             }
         }
@@ -110,9 +112,9 @@ namespace KafkaFacade.Tests
             
             using(var consumer = new Avro.AvroConsumerClient(ConsumerConfig(), 
                 SchemaRegistryConfig(),
-                new AvroConsumeResultTestHandler(2)))
+                new LoggerFactory().CreateLogger<AvroConsumerClient>()))
             {
-                var t = consumer.Open(_topic);
+                var t = consumer.Open(_topic, new AvroConsumeResultTestHandler(2));
                 Assert.True(t.Wait(10000), "Done Waiting, Consumed Something");
             }
         }
