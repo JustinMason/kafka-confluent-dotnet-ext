@@ -22,7 +22,7 @@ namespace Confluent.Kafka.Examples.AvroSpecific
 		{
 			get
 			{
-				return User._SCHEMA;
+				return HourBilled._SCHEMA;
 			}
 		}
 		public string name

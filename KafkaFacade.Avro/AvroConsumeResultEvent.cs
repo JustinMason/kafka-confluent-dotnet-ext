@@ -2,17 +2,24 @@ using Confluent.Kafka;
 using Confluent.SchemaRegistry;
 using Avro.Generic;
 using System.Threading.Tasks;
+using Confluent.SchemaRegistry.Serdes;
 
 namespace KafkaFacade.Avro
 {
     public class AvroConsumeResultEvent
     {
-        ConsumeResult<string, GenericRecord> _consumeResult;
-        ISchemaRegistryClient _schemaRegistryClient;
+        readonly ConsumeResult<string, GenericRecord> _consumeResult;
+        readonly ISchemaRegistryClient _schemaRegistryClient;
 
-        public AvroConsumeResultEvent(ISchemaRegistryClient schemaRegistryClient, ConsumeResult<string, GenericRecord> consumeResult){
+        readonly AvroSerializerConfig _avroSerializerConfig;
+
+        public AvroConsumeResultEvent(ISchemaRegistryClient schemaRegistryClient, 
+            ConsumeResult<string, GenericRecord> consumeResult,
+            AvroSerializerConfig avroSerializerConfig)
+        {
             _consumeResult = consumeResult;
             _schemaRegistryClient = schemaRegistryClient;
+            _avroSerializerConfig = avroSerializerConfig;
         }
 
         public ConsumeResult<string, GenericRecord> ConsumeResult => _consumeResult;
@@ -20,7 +27,10 @@ namespace KafkaFacade.Avro
         
         public async Task<T> ToSpecificAsync<T>()
         {
-            return await _consumeResult.Message.Value.ToSpecificAsync<T>(_schemaRegistryClient);
+            return await _consumeResult.Message.Value.ToSpecificAsync<T>(
+                _schemaRegistryClient,
+                _consumeResult.Topic,
+                _avroSerializerConfig);
         }
         
     }

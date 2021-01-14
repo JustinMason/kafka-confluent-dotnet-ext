@@ -49,6 +49,7 @@ namespace KafkaFacade.Tests
             
             using(var consumer = new Avro.AvroConsumerClient(ConsumerConfig(), 
                 SchemaRegistryConfig(),
+                AvroSerializerConfig(),
                 new LoggerFactory().CreateLogger<AvroConsumerClient>()))
             {
                 var t = consumer.Open(_topic, new AvroConsumeResultTestHandler());
@@ -112,6 +113,7 @@ namespace KafkaFacade.Tests
             
             using(var consumer = new Avro.AvroConsumerClient(ConsumerConfig(), 
                 SchemaRegistryConfig(),
+                AvroSerializerConfig(),
                 new LoggerFactory().CreateLogger<AvroConsumerClient>()))
             {
                 var t = consumer.Open(_topic, new AvroConsumeResultTestHandler(2));

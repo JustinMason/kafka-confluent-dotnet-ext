@@ -20,13 +20,17 @@ namespace KafkaFacade.Avro
         
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         
+        private readonly AvroSerializerConfig _avroSerializerConfig;
+
         public AvroConsumerClient(ConsumerConfig consumerConfig,
             SchemaRegistryConfig schemaRegistryConfig,
-            ILogger<AvroConsumerClient> logger,
+            AvroSerializerConfig avroSerializerConfig,
+            ILogger logger,
             int commitWindowMilliseconds = 1000)
         {
             _consumerConfig = consumerConfig;
             _schemaRegistryConfig = schemaRegistryConfig;
+            _avroSerializerConfig = avroSerializerConfig;
             _logger = logger;
 
             _consumerConfig.EnableAutoOffsetStore = false;
@@ -56,7 +60,7 @@ namespace KafkaFacade.Avro
                                 var consumeResult = consumer.Consume(_cancellationTokenSource.Token);
                                 if(consumeResult != null && consumeResult.Message != null)
                                 {
-                                    var avroConsumeResultEvent = new AvroConsumeResultEvent(schemaRegistry, consumeResult);
+                                    var avroConsumeResultEvent = new AvroConsumeResultEvent(schemaRegistry, consumeResult, _avroSerializerConfig);
                                     handler?.Handle(this, avroConsumeResultEvent);
                                     consumer.StoreOffset(consumeResult);   
                                 }
