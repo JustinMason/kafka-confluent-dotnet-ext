@@ -19,7 +19,7 @@ namespace KafkaFacade.Tests
         [Fact]
         public void CanProduceAndConsumeFromCloudInstance()
         {
-            using(var producer = new Avro.AvroProducerClient<User>(
+            using(var producer = new Avro.AvroProducerClient(
                 ProducerConfig(),
                 SchemaRegistryConfig(),
                 AvroSerializerConfig()
@@ -60,15 +60,11 @@ namespace KafkaFacade.Tests
         [Fact]
         public void CanProduceUserAndHourBilledAndConsumeBothFromCloudInstance()
         {
-            using(var producerUser = new Avro.AvroProducerClient<User>(
+            using(var producer = new Avro.AvroProducerClient(
                 ProducerConfig(),
                 SchemaRegistryConfig(),
                 AvroSerializerConfig()
 
-            ))
-            using(var producerHoursBilled = new Avro.AvroProducerClient<HourBilled>(
-                producerUser,
-                AvroSerializerConfig()
             ))
             {
 
@@ -84,7 +80,7 @@ namespace KafkaFacade.Tests
                     rate_billed = Math.Round( AvroDecimal.ToDecimal( user.hourly_rate) * (decimal)0.1,2)
                 };
 
-                producerUser.Produce(_topic, "test1", user, (deliveryReport) =>
+                producer.Produce<User>(_topic, "test1", user, (deliveryReport) =>
                 {
                     if (deliveryReport.Error.Code != ErrorCode.NoError)
                     {
@@ -97,7 +93,7 @@ namespace KafkaFacade.Tests
                     }
                 });
 
-                producerHoursBilled.Produce(_topic, "test1", hourBilled, (deliveryReport) =>
+                producer.Produce<HourBilled>(_topic, "test1", hourBilled, (deliveryReport) =>
                 {
                     if (deliveryReport.Error.Code != ErrorCode.NoError)
                     {
