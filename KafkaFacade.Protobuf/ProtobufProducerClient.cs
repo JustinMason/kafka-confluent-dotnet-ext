@@ -9,7 +9,7 @@ using Google.Protobuf;
 
 namespace KafkaFacade.Protobuf
 {
-    public class ProtobufProducerClient : IProducerClient, IDisposable
+    public class ProtobufProducerClient : IProtobufProducer, IDisposable
     {
         private readonly IProducer<string, byte[]> _producer;
 
