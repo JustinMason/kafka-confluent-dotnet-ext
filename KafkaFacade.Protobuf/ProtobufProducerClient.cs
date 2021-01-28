@@ -9,40 +9,45 @@ using Google.Protobuf;
 
 namespace KafkaFacade.Protobuf
 {
-    public class ProtobufProducerClient<T> : IProducerClient, IDisposable
-        where T : IMessage<T>, new()
+    public class ProtobufProducerClient : IProducerClient, IDisposable
     {
-        private readonly IProducer<string, T> _producer;
+        private readonly IProducer<string, byte[]> _producer;
+
+        private readonly ProtobufSerializerConfig _protobufSerialzerConfig;
+
         private readonly CachedSchemaRegistryClient _schemaRegistryClient;
         public ProtobufProducerClient(ProducerConfig producerConfig, 
             SchemaRegistryConfig schemaRegistryConfig, 
-            ProtobufSerializerConfig ProtobufSerialzerConfig )
+            ProtobufSerializerConfig protobufSerialzerConfig )
         {
             _schemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryConfig);
+            _protobufSerialzerConfig = protobufSerialzerConfig;
 
-            _producer = new ProducerBuilder<string, T>(producerConfig)
-                .SetValueSerializer(new ProtobufSerializer<T>(_schemaRegistryClient, ProtobufSerialzerConfig).AsSyncOverAsync())
+            _producer = new ProducerBuilder<string, byte[]>(producerConfig)
+                //.SetValueSerializer(new ProtobufSerializer<T>(_schemaRegistryClient, ProtobufSerialzerConfig).AsSyncOverAsync())
                 .Build();
         }
 
-        public ProtobufProducerClient(IProducerClient producerClient,  
-            ProtobufSerializerConfig ProtobufSerialzerConfig )
-        {
-            _schemaRegistryClient = producerClient.SchemaRegistryClient;
+        
 
-            _producer = new DependentProducerBuilder<string, T>(producerClient.Handle)
-                .SetValueSerializer(new ProtobufSerializer<T>(_schemaRegistryClient, ProtobufSerialzerConfig).AsSyncOverAsync())
-                .Build();
+        public async Task<DeliveryResult<string, byte[]>> ProduceAsync<T>(string topic, string key, T item)
+            where T : IMessage<T>, new()
+        {
+            var serializer = new ProtobufSerializer<T>(_schemaRegistryClient, _protobufSerialzerConfig);
+            var bytes = await serializer.SerializeAsync(item, 
+                new Confluent.Kafka.SerializationContext(Confluent.Kafka.MessageComponentType.Value, topic));
+        
+            return await _producer.ProduceAsync(topic, new Message<string, byte[]> {Key=key, Value = bytes});
         }
 
-        public async Task<DeliveryResult<string, T>> ProduceAsync(string topic, string key, T item)
+        public void Produce<T>(string topic, string key, T item, Action<DeliveryReport<string, byte[]>> produceReportAction)
+            where T : IMessage<T>, new()
         {
-            return await _producer.ProduceAsync(topic, new Message<string, T> {Key=key, Value = item});
-        }
-
-        public void Produce(string topic, string key, T item, Action<DeliveryReport<string, T>> produceReportAction)
-        {
-            _producer.Produce(topic, new Message<string, T> {Key=key, Value = item}, produceReportAction);
+            var serializer = new ProtobufSerializer<T>(_schemaRegistryClient, _protobufSerialzerConfig).AsSyncOverAsync<T>();
+            var bytes = serializer.Serialize(item, 
+                new Confluent.Kafka.SerializationContext(Confluent.Kafka.MessageComponentType.Value, topic));
+        
+            _producer.Produce(topic, new Message<string, byte[]> {Key=key, Value = bytes}, produceReportAction);
         }
 
         public Handle Handle => _producer.Handle;

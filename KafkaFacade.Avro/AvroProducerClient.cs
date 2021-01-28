@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace KafkaFacade.Avro
 {
-    public class AvroProducerClient : IProducerClient, IDisposable
+    public class AvroProducerClient : IAvroProducer, IDisposable
     {
         private readonly IProducer<string, byte[]> _producer;
         private readonly CachedSchemaRegistryClient _schemaRegistryClient;
@@ -59,10 +59,6 @@ namespace KafkaFacade.Avro
 
             return _serializers[typeof(T)] as AvroSerializer<T>;
         } 
-
-        public Handle Handle => _producer.Handle;
-
-        public CachedSchemaRegistryClient SchemaRegistryClient => _schemaRegistryClient;
 
         public void Dispose()
         {

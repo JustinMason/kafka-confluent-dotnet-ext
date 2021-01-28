@@ -17,7 +17,7 @@ namespace KafkaFacade.Tests
         [Fact]
         public void CanProduceAndConsumeFromCloudInstance()
         {
-            using(var producer = new ProtobufProducerClient<User>(
+            using(var producer = new ProtobufProducerClient(
                 ProducerConfig(),
                 SchemaRegistryConfig(),
                 new ProtobufSerializerConfig()
